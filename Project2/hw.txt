@@ -1,0 +1,88 @@
+1.
+endlendl
+grendel
+
+2.
+It prints a right triangle.
+(e.g. side=5:
+    #
+   ##
+  ###
+ ####
+#####)
+
+3.
+#include <iostream>
+using namespace std;
+
+int main()
+{
+    int side, i, j;
+    
+    cout << "Enter a number: ";
+    cin >> side;
+    i = side;
+    while (i > 0)
+    {
+        j = --i;
+        while (j > 0)
+        {
+            cout << " ";
+            j--;
+        }
+        j = side - i;
+        while (j > 0)
+        {
+            cout << "#";
+            j--;
+        }
+        cout << endl;
+    }
+}
+
+4.
+#include <iostream>
+using namespace std;
+
+int main()
+{
+    int side, i, j;
+    
+    cout << "Enter a number: ";
+    cin >> side;
+    i = side;
+    do
+    {
+        j = --i;
+        if (j != 0)
+            do
+            {
+                cout << " ";
+                j--;
+            } while (j > 0);
+        j = side - i;
+        do
+        {
+            cout << "#";
+            j--;
+        } while (j > 0);
+        cout << endl;
+    } while (i > 0);
+}
+
+5.
+switch (week) {
+        case 0:
+            cout << "first lecture";
+            break;
+        case 4:
+        case 8:
+            cout << "midterm";
+            break;
+        case 10:
+            cout << "final";
+            break;
+        default:
+            cout << "nothing";
+            break;
+    }

@@ -1,0 +1,327 @@
+bplist00—_WebMainResource’	
+_WebResourceTextEncodingName_WebResourceFrameName^WebResourceURL_WebResourceData_WebResourceMIMETypeUUTF-8P_7http://cs.ucla.edu/classes/fall14/cs31/morestrings.htmlO4L<!--?xml version="1.0" encoding="ISO-8859-1" ?--><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head>
+ <title>More Things about Strings</title>
+</head>
+<body>
+<div align="center">
+<h2>More Things about Strings</h2>
+</div>
+<p>
+A string is a sequence of zero or more characters.  The <code>size</code>
+function tells you how many characters are in the string:
+</p>
+<pre>        string s = "Hello";
+        cout &lt;&lt; s.size();   // writes 5
+        s = "Wow";
+        cout &lt;&lt; s.size();   // writes 3
+        s = "";
+        cout &lt;&lt; s.size();   // writes 0
+</pre>
+<p>
+(For historical reasons, there is also a <code>length</code> function that
+returns the same value that <code>size</code> does.  In other words,
+<code>s.length()</code> and <code>s.size()</code> may be used interchangeably.)
+</p>
+<p>
+You can access individual characters in a string using the <code>[]</code>
+operator.  The positions of the characters in a string are numbered from left
+to right, starting at 0.  Your program's behavior is undefined if it tries to
+access a character at a position that is out of range for the string.
+</p>
+<pre>                                 //  01234
+        string s = "Hello";      //  Hello
+        cout &lt;&lt; s[0];      // writes H
+        cout &lt;&lt; s[4];      // writes o
+        cout &lt;&lt; s[5];      // Undefined behavior!
+        cout &lt;&lt; s[-1];     // Undefined behavior!
+</pre>
+<p>
+To visit every character in a string (for example, to write each character of
+the string on a line by itself), you can say
+</p>
+<pre>        string s = "Hello";
+        for (int k = 0; k != s.size(); k++)
+                cout &lt;&lt; s[k] &lt;&lt; endl;
+</pre>
+<p>
+While this will work for everything you're doing in this class, technically
+the expression <code>s.size()</code> returns a number of a special type
+defined in the library:  not <code>int</code>, but
+<code>string::size_type</code>.  This type name is a synonym for some
+unsigned integer type.  (An unsigned integer variable can contain only
+whole numbers, no negatives.)  It turns out that a consequence of the C++
+expression rules is that if <code>k</code> is an <code>int</code>, the loop
+above might not work correctly for strings over 2 billion characters long,
+and the compiler might give you a warning about that, phrased as a
+"signed/unsigned mismatch" or a "comparison between signed and unsigned integer
+expressions".  Since we won't be using such ridiculously long strings,
+declaring <code>k</code> to be an <code>int</code> is fine.
+</p>
+<p>
+Still, it's good practice to try to get a clean build with no warnings.  Like
+the boy who cried wolf, if the compiler gives you many warnings about things
+that are harmless, you won't notice the warnings you should take seriously.
+To eliminate the warning you might get, you should declare k to be of the
+technically proper type:
+</p>
+<pre>        for (string::size_type k = 0; k != text.size(); k++)
+</pre>
+<p>
+Most C++ library implementations make <code>size_t</code> synonymous with
+<code>string::size_type</code>, so you can get away with the somewhat shorter
+</p>
+<pre>        for (size_t k = 0; k != text.size(); k++)
+</pre>
+<p>
+Again, you don't <em>have</em> to do this; you can declare <code>k</code> to
+be an <code>int</code> if you like, but in that case be prepared for possible
+(harmless) signed/unsigned warnings.
+</p>
+<p>
+If you do choose to declare <code>k</code> to be of type
+<code>string::size_type</code> or <code>size_t</code>, you need to be sure
+that you never try to make <code>k</code> negative.  For example, if you try to
+traverse a string backward, then your saying
+</p>
+<pre>	for (string::size_type k = text.size()-1; k &gt;= 0; k--)
+	{
+		... text[k] ...
+	}
+</pre>
+<p>
+would lead to undefined behavior.  (If an unsigned integer <code>k</code> is 0
+when you execute <code>k--</code>, it will end up with a huge positive
+value.  An unsigned integer is always &gt;= 0, so we execute the loop body
+and try to talk about a character at a position way past the end of the
+string.)  One correct way to write the loop is
+</p>
+<pre>	string::size_type k = text.size();
+	while (k &gt; 0)
+	{
+		k--;
+		... text[k] ...
+	}
+</pre>
+<p>
+Again, if we choose to make <code>k</code> an <code>int</code>, the
+<code>for</code> loop version would be fine, but we'd get the (harmless)
+signed/unsigned warning.
+</p>
+<p>
+Another thing you can do with a string is to append characters to the end
+of the string.  The <code>+=</code> operator lets you do this.  (This is
+a different use of the operator than the one that lets you add a number
+to an <code>int</code> or <code>double</code> variable.)  Here's an example
+where we copy all of the non-blank characters from the string <code>s</code>
+to the string <code>t</code>:
+</p>
+<pre>        string s = "Hello there!  How are you?";
+        string t;   // automatically initialized to the empty string
+        for (size_t k = 0; k != s.size(); k++)
+	{
+            if (s[k] != ' ')   // If s[k] is not a blank
+                t += s[k];     //   append s[k] to t
+	}
+        cout &lt;&lt; t;  //  writes Hellothere!Howareyou?
+</pre>
+<p>
+Notice that when talking about constants representing single characters, we
+use single quote marks, not double quote marks.  C++ distinguishes between
+the type <code>string</code>, objects of which are sequences of zero or more
+characters, and the type <code>char</code>, objects of which are always a
+single character.  If <code>s</code> is a <code>string</code>, then the
+expression <code>s[k]</code> is a <code>char</code>.  The language lets us
+compare a <code>char</code> with another <code>char</code>, like the
+constants <code>'&nbsp;'</code> or <code>'@'</code> or <code>'A'</code>.
+(The single quotes denote a <code>char</code> constant.)
+</p>
+<p>
+You are also able to copy a substring of a string.  For example, here's how
+we can copy the substring of <code>s</code> starting at position 5 and going
+for 3 characters:
+</p>
+<pre>                                  // 012345678
+        string s = "duplicate";   // duplicate
+        cout &lt;&lt; s.substr(5,3);    // writes cat 
+</pre>
+<p>
+Here's how to clip off the first six characters of a string:
+</p>
+<pre>        string t = "fingernail";
+        t = t.substr(6, t.size()-6);  // t is now "nail"
+</pre>
+<p>
+Sometimes we want to classify characters, asking, for example, whether they
+are letter characters or digit characters.  If you say
+</p><p>
+</p><pre>        #include &lt;cctype&gt;
+</pre>
+<p>
+then you can use character classification functions like these:
+</p>
+<pre>                                //  01234567
+        string s = "Maroon 5";  //  Maroon 5
+        if (isalpha(s[0]))  // true, since 'M' is a letter
+          ...
+        if (isupper(s[0]))  // true, since 'M' is an uppercase letter
+          ...
+        if (islower(s[2]))  // true, since 'r' is a lowercase letter
+          ...
+        if (isdigit(s[7]))  // true, since '5' is a digit character
+          ...
+        if (islower(s[0]))  // false, since 'M' is not a lowercase letter
+          ...
+        if (isalpha(s[6]))  // false, since ' ' is not a letter
+          ...
+        if (isalpha(s[7]))  // false, since '5' is not a letter
+          ...
+</pre>
+<p>
+This code copies all non-letters in a string:
+</p>
+<pre>        string s = "#1 in 2014: Yeah!";
+        string t;
+        for (size_t k = 0; k != s.size(); k++)
+            if (!isalpha(s[k]))  // if not a letter
+                t += s[k];       //   append it to t
+
+        // t is now "#1  2014: !"
+</pre>
+<p>
+The function <code>tolower</code>, when given an uppercase letter, returns
+the lowercase equivalent of that letter; when given any other character,
+just returns that same character.  So
+</p>
+<pre>        string s = "Don't SHOUT!";
+	string t;
+        for (size_t k = 0; k != s.size(); k++)
+	    t += tolower(s[k]);
+        cout &lt;&lt; t;
+</pre>
+<p>
+writes <code>don't shout!</code>.  Similarly, the function <code>toupper</code>
+returns the uppercase equivalent of a letter.
+</p>
+<p>
+There's a lot more you can do with strings and characters, but the information
+in this tutorial will suffice to enable you to do Project 3.
+</p>
+<h3>Visual C++: <code>s[k]</code> when <code>k</code> is out of range</h3>
+<p>
+We've seen that we can access the character of a string <code>s</code> at
+position <code>k</code>:
+</p>
+<pre>        string s = "Hello";
+        cout &lt;&lt; s[0];      // writes H
+        cout &lt;&lt; s[4];      // writes o
+</pre>
+<p>
+If <code>k</code> is an integer such that <code>k</code> &gt;= 0 and
+<code>k</code> &lt; <code>s.size()</code>, then <code>s[k]</code> refers
+to the character at position <code>k</code> of the string <code>s</code>. 
+But what if <code>k</code> &lt; 0 or <code>k</code> &gt;= <code>s.size()</code>?
+The C++ Standard says that <code>s[k]</code> in this case has undefined
+behavior:  The program might crash, or access memory that is not part of the
+string, or appear to work normally, or appear to work for a while and then
+misbehave, or print a useful diagnostic message, etc.  Different compilers
+might do different things at different times.
+</p>
+<p>
+When you build a Visual C++ project in the Debug configuration, which is
+what we're doing, the Visual C++ 2012 library's implementation of the
+<code>[]</code> operator for strings will, in fact, check to see if the
+position is within range, and if not, immediately terminate the program,
+putting up a dialog box containing the text <em>Debug Assertion
+Failed!</em> and <em>string subscript out of range</em>.  This alone is
+useful in that it alerts you to a problem, but the real payoff comes if
+you know something about using the Visual C++ 2012 debugger.
+</p>
+<p>
+If your program uses the <code>[]</code> operator for strings and dies
+when run under Visual C++ 2012, producing the dialog box with the message
+<em>string subscript out of range</em>, you can click Retry to fire up the
+debugger.  (Annoyingly, after clicking Retry, you will have to select
+"Debug the program" in the next dialog box that comes up, and then in the
+next box, select the Possible Debugger that has the name of your project, and
+click Yes.  In the next dialog box that appears, click Break.)  In the
+Call Stack window, double-click the line just <em>below</em> the one containing
+"<em>yourProject</em>.exe!std::basic_string&lt;char,...".  You'll then see
+your program code, with an arrow in the left margin pointing to one of the
+lines of code.  Somewhere in the indicated line in your program code is
+your bad subscript; you can examine the Autos window to see the values of
+any variables involved.  Select Debug / Stop Debugging when you're
+finished exploring.
+</p>
+<!--
+<a id="mudflap"></a>
+<h3>g++ on the SEASnet Linux server: <code>s[k]</code> when <code>k</code> is out of range</h3>
+<p>
+When you run your program on the SEASnet Linux server and you try to access
+a character of a string at an invalid position, you will usually (but not
+always) get a "mudflap violation" message.  For example, consider this program:
+</p>
+<pre>
+	#include &lt;string>		// line 1
+	using namespace std;		// line 2
+					// line 3
+	int main()			// line 4
+	{				// line 5
+		string s("Hello");	// line 6
+		s[6] = 'x';		// line 7
+		if (s[9] == 'a')	// line 8
+		   s[0] = 'J';		// line 9
+	}				// line 10
+</pre>
+<p>
+Compiling it with g++ on the SEASnet Linux server and running it produces the
+following (with less useful text replaced by ellipses):
+</p>
+<pre>
+*******
+mudflap violation 1 (check/write): ...
+...               location=`zaq.cpp:7:27 (main)'
+...
+</pre>
+<p>
+The location indicates the file name, line number, and a number we don't care
+about.  The "check/write" indicates we're storing into the string at an
+invalid position, so this output reports the problem on line 7 of storing into
+position 6 of the 5-character string.
+</p>
+<p>
+If we change line 7 to <code>s[2] = 'x';</code> and build and run the program,
+we now see
+</p>
+<pre>
+*******
+mudflap violation 1 (check/read): ...
+...               location=`zaq.cpp:8:17 (main)'
+...
+</pre>
+<p>
+The "check/read" indicates we're trying to examine the current value of a
+character in the string at an invalid position.  So this output reports
+the problem on line 8 of accessing the character at position 9.
+</p>
+<h3>g++ on other Linux machines: <code>s[k]</code> when <code>k</code> is out of range</h3>
+<p>
+To get the same checking on your Linux machine as on the SEASnet Linux
+server, compile your program with the additional flags <code>-fmudflap
+-lmudflap</code>.  The command to the shell <code>export
+MUDFLAP_OPTIONS=-viol-abort</code> will cause the first-occurring violation to
+terminate your program.
+</p>
+</p>
+<h3>Xcode on a Mac: <code>s[k]</code> when <code>k</code> is out of range</h3>
+<p>
+There's no simple way to get an immediate error message from evaluating the
+expression <code>s[k]</code> when <code>k</code> is out of range.  You should
+periodically run your program under Visual C++ or under g++ on the SEASnet
+Linux server as you're developing it to detect these kinds of errors, and
+you should certainly do it if you're spending time trying to track down a
+bug, since the error message should indicate the statement where the
+problem is exhibited.
+</p>
+</body>
+</html>
+--></body></html>Ytext/html    ( F ] l ~ î ö õ ’5%                           5/

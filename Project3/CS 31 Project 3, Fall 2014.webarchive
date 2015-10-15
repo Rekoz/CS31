@@ -1,0 +1,413 @@
+bplist00Ñ_WebMainResourceÕ	
+_WebResourceTextEncodingName_WebResourceFrameName^WebResourceURL_WebResourceData_WebResourceMIMETypeUUTF-8P_;http://cs.ucla.edu/classes/fall14/cs31/Projects/3/spec.htmlOFÒ<!--?xml version="1.0" encoding="ISO-8859-1" ?--><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head>
+ <title>CS 31 Project 3, Fall 2014</title>
+</head>
+<body>
+<div align="right">
+Fall 2014 CS 31 
+</div>
+<div align="center">
+<h2>Programming Assignment 3<br>
+Player Piano</h2>
+<p>
+<strong>Time due: 9:00 PM Tuesday, November 4</strong>
+</p>
+</div>
+<!--
+<p style="font-size: 90%">
+Questions regarding this specification may be sent to your TA
+or to the author, <a href="mailto:das@cs.ucla.edu">David Smallberg</a>.
+Before you ask, see if your question hasn't already been addressed by the
+<a href="faq.html">Project 3 FAQ</a>.  And read the FAQ before you
+<a href="../../Submit/submission.cgi?asst=3">turn in this project</a>,
+to be sure you didn't misinterpret anything.
+-->
+<p></p>
+<h3>Introduction</h3>
+<p>
+The site
+<a href="http://buttonbass.com/editor.html" target="_blank">http://buttonbass.com/editor.html</a> features an online
+player piano.  If you click on the <code>Notes</code> button just above
+the piano keyboard, and then <code>Computer Keyboard</code>, you will see
+that each key is labelled with a character.  The text box just above it
+contains a sequence of these characters, indicating a tune to be played on
+the piano.  If you click <code>Play</code>, the sequence of notes will be
+played.  If you clear the text box and type in or copy and paste a
+different sequence of characters, then the tune that it represents will be
+played.  The <code>Interval</code> control lets you specify the tempo, the
+number of milliseconds between the starts of each beat of the tune.
+</p><p>
+The ButtonBass software expects the tune to be represented as a sequence of
+instructions, where each instruction is either:
+</p>
+<ul>
+<li>
+one of the characters on the piano keyboard display: <code>ZXCVBNM,./ASDFGHJKLQWERTYUIOP1234567890!@#$%^&amp;*()zxcvbnmasdfghjklqwertyuiop</code>  Lower case
+letters represent the same piano key as their upper case equivalent.
+</li><li>
+a space character, representing a rest that lasts one beat.
+</li><li>
+an open square bracket <code>[</code>, followed by a sequence of
+characters on the piano keyboard display, followed by a close square
+bracket <code>]</code>.  This represents a chord where all the indicated
+piano keys are played simultaneously for one beat.
+</li>
+</ul>
+<p>
+(The ButtonBass software actually accepts a few more possibilities, but they
+are not relevant to this project.)
+</p><p>
+Now for the bad news:  The people who want to produce tunes want to use a
+notation that they find more natural, knowing the
+<a href="http://piano-keyboard-guide.com/piano-keyboard-diagram.html" target="_blank">conventional way to name the piano keys</a>.  [Here's a
+<a href="http://www.youtube.com/watch?feature=fvwp&amp;NR=1&amp;v=vfD-00I6Tv4" target="_blank">video explanation</a> of the conventional naming.]  For
+them, a tune is expressed as a string like
+<code>A3C#E//E//F#3A3D4/A3C#E/</code>, where a slash terminates every
+beat.  This means "For the first beat, play a chord consisting of A in the
+third octave, and C# and E in the (default) fourth octave.  For the second
+beat, play nothing.  For the third beat, play E in the (default) fourth
+octave.  Play nothing for the fourth beat. For the fifth beat, play a
+chord consisting of F# and A in the third octave, and D in the fourth
+octave.  For the sixth beat, play a chord consisting of A in the third
+octave and C# and E in the (default) fourth octave."
+</p><p>
+Note:  The Acoustical Society of America denotes the octave that ranges from
+middle C to the B above middle C as the fourth octave.  The B just below
+middle C is the end of the third octave; the C one octave above middle C
+begins the fifth octave.  The ButtonBass piano keyboard ranges from C2
+(the C that starts the second octave) to C6 (the C that starts the sixth
+octave).
+</p><p>
+Your assignment is essentially to translate a tune from the more natural
+representation to the sequence of characters the ButtonBass software wants.
+For example, the tune <code>A3C#E//E//F#3A3D4/A3C#E/</code> should be
+translated to the string <code>[D!J] J [8DH][D!J]</code>.
+</p><p>
+Let's define the syntax of the natural representation strings you are to
+translate.
+A <em>note letter</em> is one of these seven letters, upper case only:
+<code>A B C D E F G</code>.  An <em>accidental sign</em> is one of these
+two characters:  <code># b</code>. A <em>digit</em> is one of the ten digit
+characters <code>0</code> through <code>9</code>.  A <em>note</em> is
+either:
+</p>
+<ul>
+<li>
+a note letter
+</li><li>
+a note letter immediately followed by an accidental sign
+</li><li>
+a note letter immediately followed by a digit
+</li><li>
+a note letter immediately followed by an accidental sign immediately followed
+by a digit
+</li>
+</ul>
+<p>
+Thus the following are examples of notes: <code>D</code>, <code>Eb</code>,
+<code>F3</code>, and <code>C#5</code>.  A <em>beat</em> is a sequence of zero
+or more notes, immediately followed by a slash (<code>/</code>).  A
+<em>well-formed tune</em> is a sequence of zero or more beats.  Every
+character in a non-empty well-formed tune must be part of a beat (so, for
+example, <code>C/G</code> is not a well-formed tune because the <code>G</code>
+is not part of a beat, since every beat must end with a slash).  Here
+are some examples of well-formed tunes:
+</p>
+<ul>
+<li>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><em>zero beats</em>
+</li><li>
+<code>G/</code>
+</li><li>
+<code>A3C#E//E//F#3A3D4/A3C#E/</code>
+</li><li>
+<code>C0C0DC0DD/E#FbB#Cb/B#9/</code>
+</li><li>
+<code>///&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><em>three beats</em>
+</li>
+</ul>
+<p>
+If ButtonBass is to successfully play a well-formed tune, that tune must meet
+an additional contraint that goes beyond its just being syntactically valid.
+(This is akin to a sentence like "The orange truth ate moonbeams." being
+syntactically correct English, but meaningless, since it violates semantic
+constraints like "truth has no color" and "moonbeams can't be eaten".)  In
+particular, since the ButtonBass piano keyboard does not have any keys
+below C in the second octave or above C in the sixth octave, notes like Bb1
+(intended to represent B-flat in the first octave) and F#8 (intended to
+represent F-sharp in the eighth octave) are not playable by the
+ButtonBass software.
+</p><p>
+We define a <em>playable note</em> as a note that can be played on the
+ButtonBass piano keyboard.  (In what follows, we will abide by the
+customary convention that pairs like C# and Db are equivalent, that E# is
+equivalent to F in the same octave, as are E and Fb, that B# is equivalent
+to C in the next higher octave, and that Cb is equivalent to B in the next
+lower octave.)  Thus, the playable notes are
+</p>
+<ul>
+<li>
+notes with no digit character.  These are considered to be in octave 4, so
+D and D4 are equivalent, as are F# and F#4.
+</li><li>
+notes with a digit character 2, 3, 4, or 5, except that Cb2 is not a playable
+note.  These notes are considered to be in the indicated octave number.
+</li><li>
+Cb6, representing Cb in the sixth octave, equivalent to B5.
+</li><li>
+C6, representing C in the sixth octave. 
+</li><li>
+B#1, representing B# in the first octave, equivalent to C2.
+</li>
+</ul>
+<p>
+A <em>playable tune</em> is a well-formed tune that does not contain any
+notes that are not playable.  Here is how a playable tune is translated into
+instructions for the ButtonBass software.  Each beat will translate into
+one instruction, so a well-formed tune will translate into a string
+consisting of a sequence of instructions.  Beats are translated as
+follows:
+</p>
+<ul>
+<li>
+A beat with no notes (consisting only of a slash) is translated to a space
+character.
+</li><li>
+A beat with exactly one note is translated to a single character representing
+that note.
+</li><li>
+A beat with more than one note is translated as an open square bracket,
+immediately followed by the translations of each of the notes in that
+beat, followed by a close square bracket.
+</li>
+</ul>
+<p>
+(Notice that we do not define how a tune that is not playable is translated.)
+The translation of a playable note is the single character that ButtonBass
+uses to represent that note.  If that character is a letter, it must be the
+upper case version of that letter.  For example, A4 translates to Q (not q),
+while Ab4 translates to $.  Here are some examples of how playable tunes are
+translated:
+</p>
+<ul>
+<li>The empty string translates to the empty string</li>
+<li><code>//</code> translates to two space characters</li>
+<li><code>C/C/G/G/A/A/G/</code> translates to <code>GGLLQQL</code></li>
+<li><code>D3/F#3/A3/D4//D3F#3A3D4/</code> translates to <code>.8DH [.8DH]</code></li>
+<li><code>G3B3DD5//G/A/A3B/C5/B3D5//G//G//CE5//C5/D5/E5/F#5/B3G5//G//G/</code> translates to<br>
+<code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[SFHR] LQ[DW]E[FR] L L [GT] ERT*[FU] L L</code></li>
+<li><code>DADDA/</code> translates to <code>[HQHHQ]</code></li>
+</ul>
+<p>
+The last one is unusual (Why have the same note appearing more than once in a
+chord?), but to keep things simple, we don't forbid it.
+</p>
+<h3>Your task</h3>
+<p>
+For this project, you will implement the following two functions, using
+the exact function names, parameters types, and return types shown in this
+specification.  (The parameter <em>names</em> may be different if you wish.)
+</p><dl>
+<dt><code>bool isTuneWellFormed(string tune)</code></dt>
+<dd><p>
+This function returns true if its parameter is a well-formed tune,
+and false otherwise.  
+</p></dd>
+<dt><code>int translateTune(string tune, string&amp; instructions, int&amp; badBeat)</code></dt>
+<dd><p>
+If the parameter <code>tune</code> is playable, the function sets
+<code>instructions</code> to the translation of the tune,
+leaves <code>badBeat</code> unchanged, and returns 0.  In all other cases,
+the function leaves <code>instructions</code> unchanged.  If <code>tune</code>
+is not well-formed, the function leaves <code>badBeat</code> unchanged and
+returns 1.  If <code>tune</code> is well-formed but not playable,
+<code>badBeat</code> is set to the number of the beat with the first
+unplayable note (where the first beat of the whole tune is number 1, the
+second is number 2, etc.), and the function returns 2.  You must <em>not</em>
+assume that <code>instructions</code> and <code>badBeat</code> have any
+particular values at the time this function is entered.
+</p></dd>
+</dl>
+<p>
+These are the only two functions you are required to write.  (Hint:
+<code>translateTune</code> may well call <code>isTuneWellFormed</code>.)
+Your solution may use functions in addition to these two if you wish. 
+While we won't test those additional functions separately, using them may
+help you structure your program more readably.  Of course, to test them,
+you'll want to write a main routine that calls your functions.  During the
+course of developing your solution, you might change that main routine
+many times.  As long as your main routine compiles correctly when you turn
+in your solution, it doesn't matter what it does, since we will rename it
+to something harmless and never call it (because we will supply our own
+main routine to thoroughly test your functions).
+</p>
+<h3>Programming Guildelines</h3>
+<p>
+The functions you write must not use any global variables whose values may
+be changed during execution (so global <em>constants</em> are allowed).
+</p><p>
+When you turn in your solution, neither of the two required functions, nor
+any functions they call, may read any input from <code>cin</code> or write
+any output to <code>cout</code>.  (Of course, during development, you may
+have them write whatever you like to help you debug.)  If you want to print
+things out for debugging purposes, write to <code>cerr</code> instead of
+<code>cout</code>.  <code>cerr</code> is the standard error destination;
+items written to it by default go to the screen.  When we test your
+program, we will cause everything written to <code>cerr</code> to be
+discarded instead â€” we will never see that output, so you may leave those
+debugging output statements in your program if you wish.
+</p><p>
+The correctness of your program must not depend on undefined program behavior.
+For example, you can assume nothing about <code>c</code>'s value at the
+point indicated, nor even whether or not the program crashes:
+</p>
+<pre>	int main()
+	{
+	    string s = "Hello";
+	    char c = s[5];  // c's value is undefined
+	    â€¦
+</pre>
+<p>
+Be sure that your program builds successfully, and try to ensure that your
+functions do something reasonable for at least a few test cases.  That
+way, you can get some partial credit for a solution that does not meet the
+entire specification. 
+</p>
+If you wish, you may use this <a href="translateNote.txt">translateNote</a>
+function as part of your solution.  (We can't imagine why you would not want
+to use it, since it does the work of converting one note to an instruction
+character, taking into account the octave and any accidental.)
+<p>
+There are a number of ways you might write your main routine to test your
+functions.  One way is interactively accept test strings:
+</p>
+<pre>	int main()
+	{
+	    string t;
+	    for (;;)
+	    {
+	        cout &lt;&lt; "Enter tune: ";
+		getline(cin, t);
+		if (t == "quit")
+		    break;
+		cout &lt;&lt; "isTuneWellFormed returns ";
+		if (isSongWellFormed(t))
+		    cout &lt;&lt; "true" &lt;&lt; endl;
+	        else
+		    cout &lt;&lt; "false" &lt;&lt; endl;
+	    }
+	}
+</pre>
+<p>
+While this is flexible, you run the risk of not being able to reproduce
+all your test cases if you make a change to your code and want to test
+that you didn't break anything that used to work.
+</p><p>
+Another way is to hard-code various tests and report which ones the program
+passes:
+</p>
+<pre>	int main()
+	{
+	    if (isTuneWellFormed("D5//D/"))
+		cout &lt;&lt; "Passed test 1: isTuneWellFormed(\"D5//D/\")" &lt;&lt; endl;
+	    if (!isTuneWellFormed("D5//Z/))
+		cout &lt;&lt; "Passed test 2: !isTuneWellFormed(\"D5//Z/\")" &lt;&lt; endl;
+	    â€¦
+</pre>
+<p>
+This can get rather tedious.  Fortunately, the library has a facility to
+make this easier: <code>assert</code>.  If you #include the header
+<code>&lt;cassert&gt;</code>, you can call <code>assert</code> in the
+following manner:
+</p>
+<pre>	assert(<em>some boolean expression</em>);
+</pre>
+<p>
+During execution, if the expression is true, nothing happens and execution
+continues normally; if it is false, a diagnostic message is written to
+<code>cerr</code> telling you the text and location of the failed
+assertion, and the program is terminated.  As an example, here's a very
+incomplete set of tests:
+</p>
+<pre>	#include &lt;cassert&gt;
+	#include &lt;iostream&gt;
+	using namespace std;
+
+	â€¦
+
+	int main()
+	{
+	    assert(isTuneWellFormed("D5//D/"));
+	    assert(!isTuneWellFormed("D5//Z/"));
+	    string instrs;
+	    int badb;
+	    instrs = "xxx"; badb = -999; // so we can detect whether these get changed
+	    assert(translateTune("D5//D/", instrs, badb) == 0  &amp;&amp;  instrs == "R H"  &amp;&amp;  badb == -999);
+	    instrs = "xxx"; badb = -999; // so we can detect whether these get changed
+	    assert(translateTune("D5//Z/", instrs, badb) == 1  &amp;&amp;  instrs == "xxx"  &amp;&amp;  badb == -999);
+	    assert(translateTune("D5//D8/", instrs, badb) == 2  &amp;&amp;  instrs == "xxx"  &amp;&amp;  badb == 3);
+	    â€¦
+	    cerr &lt;&lt; "All tests succeeded" &lt;&lt; endl;
+	}
+</pre>
+<p>
+The reason for writing one line of output at the end is to ensure that you
+can distinguish the situation of all tests succeeding from the case where one
+function you're testing silently crashes the program.
+</p>
+<h3>What to turn in</h3>
+<p>
+What you will turn in for this assignment is a zip file containing these
+two files and nothing more:
+</p>
+<ol>
+<li>
+<p>
+A text file named <strong>piano.cpp</strong> that contains the source
+code for your C++ program.  Your source code should have helpful comments
+that tell the purpose of the major program segments and explain any tricky
+code.  The file must be a complete C++ program that can be built and run,
+so it must contain appropriate #include lines, a main routine, and any
+additional functions you may have chosen to write.
+</p>
+</li>
+<li>A file named <strong>report.doc</strong> or <strong>report.docx</strong>
+(in Microsoft Word format) or <strong>report.txt</strong> (an ordinary text
+file) that contains:
+<ol style="list-style: lower-alpha">
+<li>A brief description of notable obstacles you overcame.
+</li>
+<li><a name="designdescription"></a>A description of the design of your
+program.  You should use <a href="../../pseudocode.html">pseudocode</a> in
+this description where it clarifies the presentation.
+</li>
+<li>
+A list of the test data that could be used to thoroughly test your program,
+along with the reason for each test.  You must note which test cases your
+program does not handle correctly. (This could happen if you didn't have time
+to write a complete solution, or if you ran out of time while still debugging
+a supposedly complete solution.) 
+</li>
+</ol>
+</li>
+</ol>
+<p>
+By November 3, there will be a link on the class webpage that will enable you
+<!--
+The <a href="../../Submit/submission.cgi?asst=3">turn in Project 3</a>
+link on the class webpage enables you
+-->
+to turn in your zip file electronically.  Turn in the file by the due time
+above.  Give yourself enough time to be sure you can turn something in,
+because we will not accept excuses like "My network connection at home was
+down, and I didn't have a way to copy my files and bring them to a SEASnet
+machine."  There's a lot to be said for turning in a preliminary version
+of your program and report early (You can always overwrite it with a later
+submission).  That way you have something submitted in case there's a
+problem later.  Notice that most of the test data portion of your report
+can be written from the requirements in this specification, before you
+even start designing your program.
+</p>
+
+
+</body></html>Ytext/html    ( F ] l ~ ” š › ÙG¯                           G¹
